@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - multiple views</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+		<style>
+			body {
+				color: #000;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+
+				background-color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			#info {
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+				background-color: white;
+			}
+
+			a {
+				color: #0080ff;
+			}
+
+			.slidecontainer {
+			  width: 50%; /* Width of the outside container */
+			}
+
+			/* The slider itself */
+			.slider {
+			  -webkit-appearance: none;  /* Override default CSS styles */
+			  appearance: none;
+			  width: 600px; /* Full-width */
+			  height: 15px; /* Specified height */
+			  background: #d3d3d3; /* Grey background */
+			  outline: none; /* Remove outline */
+			  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+			  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+			  transition: opacity .2s;
+			}
+
+			/* Mouse-over effects */
+			.slider:hover {
+			  opacity: 1; /* Fully shown on mouse-over */
+			}
+
+			/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+			.slider::-webkit-slider-thumb {
+			  -webkit-appearance: none; /* Override default look */
+			  appearance: none;
+			  width: 15px; /* Set a specific slider handle width */
+			  height: 15px; /* Slider handle height */
+			  background: #4CAF50; /* Green background */
+			  cursor: pointer; /* Cursor on hover */
+			}
+
+			.slider::-moz-range-thumb {
+			  width: 15px; /* Set a specific slider handle width */
+			  height: 15px; /* Slider handle height */
+			  background: #4CAF50; /* Green background */
+			  cursor: pointer; /* Cursor on hover */
+			}
+
+			#sliderscontainer {
+				display:flex;
+				position: absolute;
+				width: 100%;
+				padding: 15px;
+				background-color: white;
+			}
+
+		</style>
+
+	</head>
+	<body>
+		<div id="container"></div>
+		<div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - multiple views - webgl</div>
+		<div id="sliderscontainer">
+			<ul style = "list-style-type: none;">
+				<h5>Man view's controllers&nbsp;</h5>
+				<li>
+					Fov&nbsp;&nbsp;
+				  	<input type="range" min="10" max="100" value="20" step="1" class="slider" id="FovRange"></input>
+				</li>
+				<li>
+					x&nbsp;&nbsp;&nbsp;&nbsp;
+				  	<input type="range" min="10" max="1000" value="200" step="1" class="slider" id="xRange"></input>
+				</li>
+				<li>
+					y&nbsp;&nbsp;&nbsp;&nbsp; 
+				  	<input type="range" min="10" max="1000" value="200" step="1" class="slider" id="yRange"></input>
+				</li>
+				<li>
+					z&nbsp;&nbsp;&nbsp;&nbsp;
+				  	<input type="range" min="10" max="1000" value="100" step="1" class="slider" id="zRange"></input>
+				</li>
+				<li>
+					near&nbsp;
+				  	<input type="range" min="1" max="50" value="30" step="1" class="slider" id="nearRange"></input>
+				</li>
+				<li>
+					far&nbsp;&nbsp;
+				  	<input type="range" min="10" max="10000" value="500" step="1" class="slider" id="farRange"></input>
+				</li>
+			</ul>
+			<ul style = "list-style-type: none;">
+				<li>
+				  	light (click)
+				  	<input type="range" min="1" max="5" value="2" step="0.1" class="slider" id="lightRange"></input>
+				</li>
+				<h5>Man view's up controllers</h5>
+				<li>
+					theta
+				  	<input type="range" min="0" max="360" value="90" step="1" class="slider" id="thetaRange"></input>
+				</li>
+				<h5>God view's controllers&nbsp;</h5>
+				<li>
+					x&nbsp;&nbsp;&nbsp;&nbsp;
+				  	<input type="range" min="-3000" max="3000" value="800" step="10" class="slider" id="godxRange"></input>
+				</li>
+				<li>
+					y&nbsp;&nbsp;&nbsp;&nbsp;
+				  	<input type="range" min="-3000" max="3000" value="300" step="10" class="slider" id="godyRange"></input>
+				</li>
+				<li>
+					z&nbsp;&nbsp;&nbsp;&nbsp;
+				  	<input type="range" min="-3000" max="3000" value="350" step="10" class="slider" id="godzRange"></input>
+				</li>
+			</ul>
+		</div>
+		<script src="three.min.js"></script>
+		<script src="helperFns.js"></script>
+
+		<script>
+
+			var container, stats;
+
+			var views, scene, renderer;
+
+			var mouseX = 0, mouseY = 0;
+
+			var windowWidth, windowHeight;
+
+			var views = [
+				{
+					left: 0,
+					top: 0,
+					width: 0.5,
+					height: 1,
+					near:30,
+					far:500,
+					background: new THREE.Color( 0, 0, 0 ),
+
+					eye: [ 200, 200, 50 ],
+					up: [ 0, 0, 1 ],
+					fov: 50,
+					
+					updateCamera: function ( camera, scene ) {
+					  	camera.lookAt( scene.position );
+					}
+				},
+				{
+					left: 0.5,
+					top: 0,
+					width: 0.5,
+					height: 1.0,
+					near:1,
+					far:10000,
+					background: new THREE.Color( 0, 0, 0 ),
+
+					eye: [ 800, 300, 350 ],
+					up: [ 0, 0, 1 ],
+					fov: 45,
+				
+					updateCamera: function ( camera, scene ) {
+					  	camera.lookAt( scene.position );
+					}
+				},
+			];
+
+			init();
+			animatePlanets();
+			animate();
+
+			function init() {
+
+				container = document.getElementById( 'container' );
+				for ( var i = 0; i < views.length; ++ i ) {
+
+					var view = views[ i ];
+					var camera = new THREE.PerspectiveCamera( view.fov, window.innerWidth / window.innerHeight, view.near, view.far );
+					camera.position.fromArray( view.eye );
+					camera.up.fromArray( view.up );
+					view.camera = camera;
+
+				}
+
+				scene = new THREE.Scene();
+
+				//scene builder
+				buildScene(scene);
+
+				// Creating a bright effect around the sun
+
+				planeGroup = createGradient(startScale = 1,endScale = 3, startOpacity = 0.1, endOpacity = 0, numberOfPlanes = 20)
+
+				scene.add(planeGroup)
+
+				// Creating the solar system and the planet with a moon
+				group = buildAGroup(scene, numberOfPlanet=3, OrbiteSize=50, CentreSize=10, shadows=false, Position={x:0,y:0,z:0}, CentreColor=0xffffff, minSpeed=0.01, maxSpeed=0.03)
+
+				planetMoon = buildAGroup(scene, numberOfPlanet=1, OrbiteSize=5, CentreSize=3, shadows=true, Position={x:50,y:10,z:0}, CentreColor=0xffff00, minSpeed=0.05,maxSpeed=0.15)
+
+				// Creating a pivot point for this SubGroup and adding it to the group
+				addToGroup(group, planetMoon,0.01,0.03)
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, 600 );
+				container.appendChild( renderer.domElement );
+
+				frustrum=buildFrustrum(scene.position,views)
+				scene.add(frustrum)
+
+				// Creating sliders's listener
+				var sliderfov = document.getElementById('FovRange')
+				sliderfov.oninput = function(){
+					updateCameraFov()
+				}
+				var sliderx = document.getElementById('xRange')
+				sliderx.oninput = function(){
+					updateCameraX(sliderx,views[0])
+				}
+				var slidery = document.getElementById('yRange')
+				slidery.oninput = function(){
+					updateCameraY(slidery,views[0])
+				}
+				var sliderz = document.getElementById('zRange')
+				sliderz.oninput = function(){
+					updateCameraZ(sliderz,views[0])
+				}
+				var slidernear = document.getElementById('nearRange')
+				slidernear.oninput = function(){
+					updateCameraNear()
+				}
+				var sliderfar = document.getElementById('farRange')
+				sliderfar.oninput = function(){
+					updateCameraFar()
+				}
+				var slidergodx = document.getElementById('godxRange')
+				slidergodx.oninput = function(){
+					updateCameraX(slidergodx,views[1])
+				}
+				var slidergody = document.getElementById('godyRange')
+				slidergody.oninput = function(){
+					updateCameraY(slidergody,views[1])
+				}
+				var slidergodz = document.getElementById('godzRange')
+				slidergodz.oninput = function(){
+					updateCameraZ(slidergodz,views[1])
+				}
+				var slidertheta = document.getElementById('thetaRange')
+				slidertheta.oninput = function(){
+					updateCameraUp()
+				}
+				var sliderlight = document.getElementById('lightRange')
+				sliderlight.onchange = function(){
+					console.log("working")
+					updateLight()
+				}
+			}
+
+			function updateSize() {
+
+				if ( windowWidth != window.innerWidth ) {
+
+					windowWidth = window.innerWidth;
+					windowHeight = 600;
+
+					renderer.setSize( windowWidth, windowHeight );
+
+				}
+
+			}
+
+			function animate() {
+
+				render();
+				
+				requestAnimationFrame( animate );
+
+
+			}
+
+			function render() {
+
+				updateSize();
+
+				for ( var i = 0; i < views.length; ++ i ) {
+					if (i == 0){
+						scene.children[4].visible = false
+						scene.children[2].visible = true
+					}
+					else{
+						scene.children[4].visible = true
+						scene.children[2].visible = false
+					}
+					var view = views[ i ];
+					var camera = view.camera;
+
+					view.updateCamera( camera, scene );
+
+					var left = Math.floor( windowWidth * view.left );
+					var top = Math.floor( windowHeight * view.top );
+					var width = Math.floor( windowWidth * view.width );
+					var height = Math.floor( windowHeight * view.height );
+
+					renderer.setViewport( left, top, width, height );
+					renderer.setScissor( left, top, width, height );
+					renderer.setScissorTest( true );
+					renderer.setClearColor( view.background );
+
+					camera.aspect = width / height;
+					camera.updateProjectionMatrix();
+
+					renderer.render( scene, camera );
+
+				}
+
+			}
+
+			// Renders the scene and updates the render as needed.
+			function animatePlanets() {
+				requestAnimationFrame(animatePlanets);
+				var quaternion, rotationSpeed, rotationSpeedMoon, pivotPoint, pivotPointMoon, rotationAxeMoon, subgroup, planetPosition, planet
+				
+				for ( var i = 0; i < views.length; ++ i ) {
+
+					var view = views[ i ];
+					var camera = view.camera;
+
+					for (let i=1;i<group.children.length;i++){
+
+						// Rotate the planet around the sun
+						pivotPoint = group.children[i]
+						planetPosition = pivotPoint.children[0].position
+
+						// Defining the rotation axe and speed
+						rotationAxe = (new THREE.Vector3(-planetPosition.y,planetPosition.x,0)).normalize()
+						rotationSpeed = pivotPoint.speed
+
+						// Applying the rotation to the planet
+						quaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxe,rotationSpeed)
+						pivotPoint.applyQuaternion(quaternion)
+
+						// Applying local rotation to the planet if not satellites
+						if (pivotPoint.children[0].children.length == 0){
+							planet = pivotPoint.children[0]
+							quaternion =  new THREE.Quaternion().setFromAxisAngle(rotationAxe,rotationSpeed*10)
+							planet.applyQuaternion(quaternion)
+						}
+						// Rotate the planet and the satellite around it
+						else {
+
+							// Accessing to the group, the pivot points of the planet and the moon and the current position of the moon
+							subgroup = pivotPoint.children[0]
+							pivotPointPlanet = subgroup.children[0]
+							pivotPointMoon = subgroup.children[1]
+							moonPosition = pivotPointMoon.children[0].position
+
+							// Defining the rotation axe and speed
+							rotationAxeMoon = (new THREE.Vector3(-moonPosition.y,moonPosition.x,0)).normalize()
+							rotationSpeedMoon = pivotPointMoon.speed
+
+							// Applying the rotation to both elements
+							quaternion = new THREE.Quaternion().setFromAxisAngle(rotationAxeMoon,rotationSpeedMoon)
+							pivotPointPlanet.applyQuaternion(quaternion)
+							pivotPointMoon.applyQuaternion(quaternion)
+						}
+					}
+				
+				// Render the scene, using the camera specifications
+				renderer.render(scene, view.camera);
+				}
+			}
+
+		</script>
+	</body>
+</html>
