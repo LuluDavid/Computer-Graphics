@@ -1,26 +1,26 @@
-## THREE.js Solar System Animation
+# THREE.js Solar System Animation
 
 This scene is some kind of didactic work to show the basic parameters of a THREE.js camera.
 
-# Left view
+## Left view
 
 A small and simple representation of a solar system, with a modulable number of planets
 rotating around a sun on random orbits.
 
-# Right view
+## Right view
 
 A god view to visualize the different parameters of left view's camera, which are:
 * the position of the camera
 * the two angles of the camera (fov)
 * the close and far planes
 
-# Sliders
+## Sliders
 
 To modify all parameters, and visualize the impact on both views (I also added a light strength
 modification to test a bit how to represent a degressive light with multiple more and more 
 transparent spheres around the sun
 
-## How to make it work
+# How to make it work
 
 To make it work, download the repo, then use the following process: https://threejs.org/docs/index.html#manual/en/introduction/How-to-run-things-locally
 
