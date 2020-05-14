@@ -14,11 +14,15 @@ A god view to visualize the different parameters of left view's camera, which ar
 * the two angles of the camera (fov)
 * the close and far planes
 
+<img src="./pictures/solar-system-left.png">  <img src="./pictures/solar-system-right.png" width=500 height=369>
+
 ## Sliders
 
 To modify all parameters, and visualize the impact on both views (I also added a light strength
 modification to test a bit how to represent a degressive light with multiple more and more 
 transparent spheres around the sun
+
+<img src="./pictures/solar-system-bottom.png">
 
 # How to make it work
 
