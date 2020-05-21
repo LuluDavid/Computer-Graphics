@@ -1,6 +1,7 @@
 # THREE.js Solar System Animation
 
 This scene is some kind of didactic work to show the basic parameters of a THREE.js camera.
+You can simply visualize it <a href="https://luludavid.github.io/THREE.js-Solar-system/main.html">here</a>.
 
 ## Left view
 
